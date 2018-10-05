@@ -2,12 +2,30 @@
 <html>
 <head>
 </head>
-<body>
+<body data-cookie-name="test" data-cookie-days="1">
 
 <input data-cookie="a"/>
-<input data-cookie="b"/>
-<input data-cookie="c"/>
-<input data-cookie="d"/>
+<br/>
+<select data-cookie="b">
+	<option value="1">one</option>
+	<option value="2">two</option>
+	<option value="3">three</option>
+	<option value="4">four</option>
+</select>
+<br/>
+<select data-cookie="c" multiple>
+	<option value="1">one</option>
+	<option value="2">two</option>
+	<option value="3">three</option>
+	<option value="4">four</option>
+</select>
+<br/>
+<textarea data-cookie="d"></textarea>
+<br/>
+<input type="checkbox" data-cookie="e"/>
+<br/>
+<input name="f" type="radio" value="1" data-cookie="f"/>
+<input name="f" type="radio" value="2" data-cookie="f"/>
 
 <script src="jscookie.js"></script>
 </body>

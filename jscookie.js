@@ -2,13 +2,13 @@ document.addEventListener("DOMContentLoaded", function(loadEvent){
 	// Declare functions.
 	var process_input = function(elem, i, list)
 	{
-		if(prefs[document.location.pathname][elem.dataset.cookie] != null)
+		if(prefs[elem.dataset.cookie] != null)
 		{
 			if(false)
 			{
 			}
 			else
-				elem.value = prefs[document.location.pathname][elem.dataset.cookie];
+				elem.value = prefs[elem.dataset.cookie];
 		}
 		elem.addEventListener("change", input_changed);
 	}
@@ -22,16 +22,16 @@ document.addEventListener("DOMContentLoaded", function(loadEvent){
 	{
 		if(typeof(key) == "object")
 			for(var i in key)
-				prefs[document.location.pathname][i] = key[i];
+				prefs[i] = key[i];
 		else
-			prefs[document.location.pathname][key] = val;
-		setCookie("jscookie", JSON.stringify(prefs), 365);
+			prefs[key] = val;
+		setCookie(cookieName, JSON.stringify(prefs));
 	}
 
-	var setCookie = function(cname, cvalue, exdays)
+	var setCookie = function(cname, cvalue)
 	{
 		var d = new Date();
-		d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+		d.setTime(d.getTime() + cookieLength);
 		var expires = "expires="+d.toUTCString();
 		document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
 	}
@@ -57,18 +57,25 @@ document.addEventListener("DOMContentLoaded", function(loadEvent){
 	}
 	
 	// Initiate.
+	var cookieName = "jscookie";
+	if(document.body.dataset.cookieName != null)
+		cookieName = document.body.dataset.cookieName;
+	
+	var cookieLength = 365 * 24 * 60 * 60 * 1000;
+	if(document.body.dataset.cookieDays != null && !isNaN(temp = parseInt(document.body.dataset.cookieDays)))
+		cookieLength = temp * 86400000;
+	
 	var prefs = {};
-	var cookie_raw = getCookie("jscookie");
+	var cookie_raw = getCookie(cookieName);
 	if(cookie_raw != "")
 	{
 		prefs = JSON.parse(cookie_raw);
-		if(prefs[document.location.pathname] == null)
-			prefs[document.location.pathname] = {};
+		if(prefs == null)
+			prefs = {};
 	}
 	else
 	{
 		prefs = {};
-		prefs[document.location.pathname] = {};
 	}
 	var cookie_elements = document.querySelectorAll("[data-cookie]");
 	cookie_elements.forEach(process_input);
