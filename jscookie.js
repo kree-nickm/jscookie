@@ -44,8 +44,10 @@ document.addEventListener("DOMContentLoaded", function(loadEvent){
 		else if(this.type == "checkbox")
 			save_data(this.dataset.cookie, this.checked);
 		else if(this.type == "radio")
+		{
 			if(this.checked)
 				save_data(this.dataset.cookie, this.value);
+		}
 		else
 			save_data(this.dataset.cookie, this.value);
 	}
