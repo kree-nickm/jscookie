@@ -1,76 +1,78 @@
-document.addEventListener("DOMContentLoaded", function(loadEvent){
-	// Declare functions.
-	var get_from_cookie = function(elem, i, list)
+var JSCookie = new (function()
+{
+	this.cookieName = "jscookie";
+	this.cookieLength = 7 * 24 * 60 * 60 * 1000;
+	this.cookieObject = {};
+	
+	this.get_from_cookie = function(elem)
 	{
-		if(prefs[elem.dataset.cookie] != null)
+		if(this.cookieObject[elem.dataset.cookie] != null)
 		{
-			console.dir(elem);
-			if(elem.type == "select-multiple" && Array.isArray(prefs[elem.dataset.cookie]))
+			if(elem.type == "select-multiple" && Array.isArray(this.cookieObject[elem.dataset.cookie]))
 			{
 				for(var i=0; i < elem.options.length; i++)
-					if(prefs[elem.dataset.cookie].indexOf(elem.options[i].value) > -1)
+					if(this.cookieObject[elem.dataset.cookie].indexOf(elem.options[i].value) > -1)
 						elem.options[i].selected = true;
 					else
 						elem.options[i].selected = false;
 			}
 			else if(elem.type == "checkbox")
 			{
-				if(prefs[elem.dataset.cookie])
+				if(this.cookieObject[elem.dataset.cookie])
 					elem.checked = true;
 				else
 					elem.checked = false;
 			}
 			else if(elem.type == "radio")
 			{
-				if(prefs[elem.dataset.cookie] == elem.value)
+				if(this.cookieObject[elem.dataset.cookie] == elem.value)
 					elem.checked = true;
 			}
 			else
-				elem.value = prefs[elem.dataset.cookie];
+				elem.value = this.cookieObject[elem.dataset.cookie];
 		}
-		elem.addEventListener("change", input_changed);
-	}
+	};
 	
-	var input_changed = function(changeEvent)
+	this.input_changed = function(changeEvent)
 	{
-		if(this.type == "select-multiple")
+		if(changeEvent.target.type == "select-multiple")
 		{
 			var val = [];
-			for(var i=0; i < this.options.length; i++)
-				if(this.options[i].selected)
-					val.push(this.options[i].value);
-			save_data(this.dataset.cookie, val);
+			for(var i=0; i < changeEvent.target.options.length; i++)
+				if(changeEvent.target.options[i].selected)
+					val.push(changeEvent.target.options[i].value);
+			this.save_data(changeEvent.target.dataset.cookie, val);
 		}
-		else if(this.type == "checkbox")
-			save_data(this.dataset.cookie, this.checked);
-		else if(this.type == "radio")
+		else if(changeEvent.target.type == "checkbox")
+			this.save_data(changeEvent.target.dataset.cookie, changeEvent.target.checked);
+		else if(changeEvent.target.type == "radio")
 		{
-			if(this.checked)
-				save_data(this.dataset.cookie, this.value);
+			if(changeEvent.target.checked)
+				this.save_data(changeEvent.target.dataset.cookie, changeEvent.target.value);
 		}
 		else
-			save_data(this.dataset.cookie, this.value);
-	}
+			this.save_data(changeEvent.target.dataset.cookie, changeEvent.target.value);
+	};
 
-	var save_data = function(key, val)
+	this.save_data = function(key, val)
 	{
 		if(typeof(key) == "object")
 			for(var i in key)
-				prefs[i] = key[i];
+				this.cookieObject[i] = key[i];
 		else
-			prefs[key] = val;
-		setCookie(cookieName, JSON.stringify(prefs));
-	}
+			this.cookieObject[key] = val;
+		this.setCookie(this.cookieName, JSON.stringify(this.cookieObject));
+	};
 
-	var setCookie = function(cname, cvalue)
+	this.setCookie = function(cname, cvalue)
 	{
 		var d = new Date();
-		d.setTime(d.getTime() + cookieLength);
+		d.setTime(d.getTime() + this.cookieLength);
 		var expires = "expires="+d.toUTCString();
 		document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
-	}
+	};
 
-	var getCookie = function(cname)
+	this.getCookie = function(cname)
 	{
 		var name = cname + "=";
 		var decodedCookie = decodeURIComponent(document.cookie);
@@ -88,29 +90,28 @@ document.addEventListener("DOMContentLoaded", function(loadEvent){
 			}
 		}
 		return "";
-	}
+	};
 	
-	// Initiate.
-	var cookieName = "jscookie";
-	if(document.body.dataset.cookieName != null)
-		cookieName = document.body.dataset.cookieName;
-	
-	var cookieLength = 365 * 24 * 60 * 60 * 1000;
-	if(document.body.dataset.cookieDays != null && !isNaN(temp = parseInt(document.body.dataset.cookieDays)))
-		cookieLength = temp * 86400000;
-	
-	var prefs = {};
-	var cookie_raw = getCookie(cookieName);
-	if(cookie_raw != "")
+	this.initialize = function(loadEvent)
 	{
-		prefs = JSON.parse(cookie_raw);
-		if(prefs == null)
-			prefs = {};
-	}
-	else
-	{
-		prefs = {};
-	}
-	var cookie_elements = document.querySelectorAll("[data-cookie]");
-	cookie_elements.forEach(get_from_cookie);
-});
+		if(document.body.dataset.cookieName != null)
+			this.cookieName = document.body.dataset.cookieName;
+		
+		if(document.body.dataset.cookieDays != null && !isNaN(temp = parseInt(document.body.dataset.cookieDays)))
+			this.cookieLength = temp * 86400000;
+		
+		var cookie_raw = this.getCookie(this.cookieName);
+		if(cookie_raw != "")
+		{
+			this.cookieObject = JSON.parse(cookie_raw);
+			if(this.cookieObject == null)
+				this.cookieObject = {};
+		}
+		var cookie_elements = document.querySelectorAll("[data-cookie]");
+		cookie_elements.forEach(function(elem, i, list){
+			this.get_from_cookie(elem);
+			elem.addEventListener("change", this.input_changed.bind(this));
+		}.bind(this));
+	};
+})();
+document.addEventListener("DOMContentLoaded", JSCookie.initialize.bind(JSCookie));
