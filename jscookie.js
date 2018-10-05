@@ -1,11 +1,29 @@
 document.addEventListener("DOMContentLoaded", function(loadEvent){
 	// Declare functions.
-	var process_input = function(elem, i, list)
+	var get_from_cookie = function(elem, i, list)
 	{
 		if(prefs[elem.dataset.cookie] != null)
 		{
-			if(false)
+			console.dir(elem);
+			if(elem.type == "select-multiple" && Array.isArray(prefs[elem.dataset.cookie]))
 			{
+				for(var i=0; i < elem.options.length; i++)
+					if(prefs[elem.dataset.cookie].indexOf(elem.options[i].value) > -1)
+						elem.options[i].selected = true;
+					else
+						elem.options[i].selected = false;
+			}
+			else if(elem.type == "checkbox")
+			{
+				if(prefs[elem.dataset.cookie])
+					elem.checked = true;
+				else
+					elem.checked = false;
+			}
+			else if(elem.type == "radio")
+			{
+				if(prefs[elem.dataset.cookie] == elem.value)
+					elem.checked = true;
 			}
 			else
 				elem.value = prefs[elem.dataset.cookie];
@@ -15,7 +33,21 @@ document.addEventListener("DOMContentLoaded", function(loadEvent){
 	
 	var input_changed = function(changeEvent)
 	{
-		save_data(this.dataset.cookie, this.value);
+		if(this.type == "select-multiple")
+		{
+			var val = [];
+			for(var i=0; i < this.options.length; i++)
+				if(this.options[i].selected)
+					val.push(this.options[i].value);
+			save_data(this.dataset.cookie, val);
+		}
+		else if(this.type == "checkbox")
+			save_data(this.dataset.cookie, this.checked);
+		else if(this.type == "radio")
+			if(this.checked)
+				save_data(this.dataset.cookie, this.value);
+		else
+			save_data(this.dataset.cookie, this.value);
 	}
 
 	var save_data = function(key, val)
@@ -78,5 +110,5 @@ document.addEventListener("DOMContentLoaded", function(loadEvent){
 		prefs = {};
 	}
 	var cookie_elements = document.querySelectorAll("[data-cookie]");
-	cookie_elements.forEach(process_input);
+	cookie_elements.forEach(get_from_cookie);
 });
