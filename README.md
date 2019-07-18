@@ -1,4 +1,5 @@
 # jscookie
+This is just something I was working on for fun. You should probably go here instead if you want a usable script: https://github.com/js-cookie/js-cookie
 
 ## Usage
 Include the following anywhere in your HTML document:
